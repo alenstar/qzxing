@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-QT       += core
+CONFIG += qt
 
 DEFINES += QZXING_LIBRARY \
         ZXING_ICONV_CONST \
@@ -274,8 +274,6 @@ qzxing_multimedia {
 }
 
 qzxing_qml {
-    QT += gui
-
     greaterThan(QT_VERSION, 4.7): lessThan(QT_VERSION, 5.0): QT += declarative
     greaterThan(QT_MAJOR_VERSION, 4): QT += quick
 
@@ -328,6 +326,8 @@ symbian {
 }
 
 win32-msvc*{
+
+    DEFINES += __STDC_LIMIT_MACROS
 
     INCLUDEPATH += $$PWD/zxing/win32/zxing \
 	            $$PWD/zxing/win32/zxing/msvc
