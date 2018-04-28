@@ -315,7 +315,7 @@ QRectF getTagRect(const ArrayRef<Ref<ResultPoint> > &resultPoints, const Ref<Bit
     return QRectF();
 }
 
-QString QZXing::decodeImage(const QImage &image, int maxWidth, int maxHeight, bool smoothTransformation)
+QByteArray QZXing::decodeImage(const QImage &image, int maxWidth, int maxHeight, bool smoothTransformation)
 {
     QTime t;
     t.start();
@@ -326,7 +326,7 @@ QString QZXing::decodeImage(const QImage &image, int maxWidth, int maxHeight, bo
     {
         emit decodingFinished(false);
         processingTime = t.elapsed();
-        return "";
+        return QByteArray();
     }
 
     CameraImageWrapper *ciw = NULL;
@@ -376,27 +376,31 @@ QString QZXing::decodeImage(const QImage &image, int maxWidth, int maxHeight, bo
         }
 
         if (hasSucceded) {
-            QString string = QString(res->getText()->getText().c_str());
-            if (!string.isEmpty() && (string.length() > 0)) {
+            std::cerr << "res size: " << res->getText()->size() << std::endl;
+            QByteArray ba = QByteArray(res->getText()->getText().data(), res->getText()->size());
+            std::cerr << "string size: " << ba.length() << std::endl;
+            if (!ba.isEmpty() && (ba.length() > 0)) {
                 int fmt = res->getBarcodeFormat().value;
                 foundedFmt = decoderFormatToString(fmt);
+                /*
                 charSet_ = QString::fromStdString(res->getCharSet());
                 if (!charSet_.isEmpty()) {
                     QTextCodec *codec = QTextCodec::codecForName(res->getCharSet().c_str());
                     if (codec)
                         string = codec->toUnicode(res->getText()->getText().c_str());
                 }
+                */
 
-                emit tagFound(string);
-                emit tagFoundAdvanced(string, foundedFmt, charSet_);
+                emit tagFound(ba);
+                emit tagFoundAdvanced(ba, foundedFmt, charSet_);
 
                 try {
                     const QRectF rect = getTagRect(res->getResultPoints(), binz->getBlackMatrix());
-                    emit tagFoundAdvanced(string, foundedFmt, charSet_, rect);
+                    emit tagFoundAdvanced(ba, foundedFmt, charSet_, rect);
                 }catch(zxing::Exception &/*e*/){}
             }
             emit decodingFinished(true);
-            return string;
+            return ba;
         }
     }
     catch(zxing::Exception &e)
@@ -407,7 +411,7 @@ QString QZXing::decodeImage(const QImage &image, int maxWidth, int maxHeight, bo
     emit error(errorMessage);
     emit decodingFinished(false);
     processingTime = t.elapsed();
-    return "";
+    return QByteArray();
 }
 
 QString QZXing::decodeImageFromFile(const QString& imageFilePath, int maxWidth, int maxHeight, bool smoothTransformation)
@@ -423,7 +427,7 @@ QString QZXing::decodeImageFromFile(const QString& imageFilePath, int maxWidth, 
 
     QUrl imageUrl = QUrl::fromLocalFile(filePath);
     QImage tmpImage = QImage(imageUrl.toLocalFile());
-    return decodeImage(tmpImage, maxWidth, maxHeight, smoothTransformation);
+    return QString(decodeImage(tmpImage, maxWidth, maxHeight, smoothTransformation));
 }
 
 QString QZXing::decodeImageQML(QObject *item)
@@ -444,7 +448,7 @@ QString QZXing::decodeSubImageQML(QObject *item,
 
     QImage img = imageHandler->extractQImage(item, offsetX, offsetY, width, height);
 
-    return decodeImage(img);
+    return QString(decodeImage(img));
 }
 
 QString QZXing::decodeImageQML(const QUrl &imageUrl)
@@ -482,7 +486,7 @@ QString QZXing::decodeSubImageQML(const QUrl &imageUrl,
         img = img.copy(offsetX, offsetY, width, height);
     return decodeImage(img);
 #else
-    return decodeImage(QImage());
+    return QString(decodeImage(QImage()));
 #endif //QZXING_QML
 }
 

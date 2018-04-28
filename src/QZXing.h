@@ -112,7 +112,7 @@ public slots:
       * The smoothTransformation flag determines whether the transformation will be smooth or fast.
       * Smooth transformation provides better results but fast transformation is...faster.
       */
-    QString decodeImage(const QImage &image, int maxWidth = -1, int maxHeight = -1, bool smoothTransformation = false);
+    QByteArray decodeImage(const QImage &image, int maxWidth = -1, int maxHeight = -1, bool smoothTransformation = false);
 
     /**
       * The decoding function. Will try to decode the given image based on the enabled decoders.
@@ -178,9 +178,9 @@ signals:
     void decodingStarted();
     void decodingFinished(bool succeeded);
     void enabledFormatsChanged();
-    void tagFound(QString tag);
-    void tagFoundAdvanced(const QString &tag, const QString &format, const QString &charSet) const;
-    void tagFoundAdvanced(const QString &tag, const QString &format, const QString &charSet, const QRectF &rect) const;
+    void tagFound(QByteArray tag);
+    void tagFoundAdvanced(const QByteArray &tag, const QString &format, const QString &charSet) const;
+    void tagFoundAdvanced(const QByteArray &tag, const QString &format, const QString &charSet, const QRectF &rect) const;
     void error(QString msg);
 
 private:
